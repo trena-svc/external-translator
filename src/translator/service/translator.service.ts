@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TranslatorRunnerFactoryService } from './translator-runner-factory.service';
-import { Language, TranslatorEngineType } from './translator';
-import { TranslationTaskManager } from './translation-task-manager';
+import { Language, TranslatorEngineType } from '../translator';
+import { TranslationTaskManager } from '../translation-task-manager';
 
 type TranslateParams = {
   engineType: TranslatorEngineType;
@@ -59,6 +59,8 @@ export class TranslatorService {
     try {
       await Promise.race(
         runnerList.map(async (runner, runnerIdx) => {
+          const logRunner = this.createRunnerLogger(runnerIdx);
+
           while (!taskManager.isFinishedAll()) {
             const curTask = taskManager.getUnfinishedTask();
             if (!curTask) {
@@ -66,24 +68,29 @@ export class TranslatorService {
             }
 
             try {
-              this.logger.log(`Crawler ${runnerIdx}: Prepare the page`);
+              logRunner(`Prepare the page`);
               await runner.prepare();
-              this.logger.log(
-                `Crawler ${runnerIdx}: Start to translate at order [${curTask.order}/${srcTextList.length}]`,
+              logRunner(
+                `Start to translate at order [${curTask.order}/${srcTextList.length}]`,
               );
 
               const [result] = await runner.run([curTask.text]);
 
-              this.logger.log(
-                `Crawler ${runnerIdx}: Finish to translate at order [${curTask.order}/${srcTextList.length}]`,
+              logRunner(
+                `Finish to translate at order [${curTask.order}/${srcTextList.length}]`,
               );
 
               await taskManager.saveTaskResult(curTask, result);
             } catch (err) {
-              this.logger.error(err as Error);
-              this.logger.error(
-                `Crawler ${runnerIdx}: Failed to translate ${curTask.text}`,
-              );
+              if (!taskManager.isFinishedAll()) {
+                logRunner(
+                  `Failed to translate ${curTask.text}, ${
+                    (err as Error).stack
+                  }`,
+                  'error',
+                );
+              }
+
               await runner.close();
             }
           }
@@ -96,5 +103,17 @@ export class TranslatorService {
     }
 
     return taskManager.getResultList();
+  }
+
+  private createRunnerLogger(runnerIdx: number) {
+    const prefix = `Runner ${runnerIdx}`;
+
+    return (log: string, level: 'info' | 'error' = 'info') => {
+      if (level === 'info') {
+        this.logger.log(`${prefix}: ${log}`);
+      } else {
+        this.logger.error(`${prefix}: ${log}`);
+      }
+    };
   }
 }

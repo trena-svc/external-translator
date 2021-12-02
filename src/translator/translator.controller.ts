@@ -1,12 +1,16 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
-import { TranslatorService } from './translator.service';
-import { TranslateDto } from './dto/translate.dto';
+import { TranslatorService } from './service/translator.service';
+import { TranslateDto, TranslateJobSubmitDto } from './dto/translate.dto';
+import { TranslatorJobSubmissionService } from './service/translator-job-submission.service';
 
 @Controller('translate')
 export class TranslatorController {
   private readonly logger = new Logger(TranslatorController.name);
 
-  constructor(private readonly translatorService: TranslatorService) {}
+  constructor(
+    private readonly translatorService: TranslatorService,
+    private readonly translatorJobSubmissionService: TranslatorJobSubmissionService,
+  ) {}
 
   @Post()
   translate(
@@ -39,5 +43,18 @@ export class TranslatorController {
         proxyList: [],
       },
     );
+  }
+
+  @Post('/submit')
+  async translateTaskSubmit(
+    @Body()
+    { srcLang, tgtLang, srcTextList, engineType }: TranslateJobSubmitDto,
+  ) {
+    return await this.translatorJobSubmissionService.addJob({
+      srcLang,
+      tgtLang,
+      srcTextList,
+      engineType,
+    });
   }
 }

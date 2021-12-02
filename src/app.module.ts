@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TranslatorModule } from './translator/translator.module';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as Joi from 'joi';
 import configuration, { getConfig } from './config/configuration';
 
 @Module({
@@ -13,6 +14,14 @@ import configuration, { getConfig } from './config/configuration';
       envFilePath: ['.env.local', '.env'],
       load: [configuration],
       isGlobal: true,
+      validationSchema: Joi.object({
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.number().default(6379),
+        PORT: Joi.number().default(3000),
+        BULL_TRANSLATION_RUNNER_PARALLELISM: Joi.number().default(5),
+        BULL_TRANSLATION_RUNNER_HEADLESS: Joi.bool().default(true),
+        BULL_TRANSLATION_RUNNER_USE_PROXY: Joi.bool().default(true),
+      }),
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
@@ -30,5 +39,6 @@ import configuration, { getConfig } from './config/configuration';
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: [BullModule],
 })
 export class AppModule {}

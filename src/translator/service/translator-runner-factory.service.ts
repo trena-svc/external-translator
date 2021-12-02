@@ -1,14 +1,14 @@
-import { Translator, TranslatorEngineType } from './translator';
-import tencentTranslator from './engine/tencent';
-import TranslatorRunner, { RunnerConfig } from './translator-runner';
+import { Translator, TranslatorEngineType } from '../translator';
+import tencentTranslator from '../engine/tencent';
+import TranslatorRunner, { RunnerConfig } from '../translator-runner';
 import { Inject, Injectable } from '@nestjs/common';
 import { PuppeteerExtra } from 'puppeteer-extra';
-import naverTranslator from './engine/naver';
-import kakaoTranslator from './engine/kakao';
-import googleTranslator from './engine/google';
-import baiduTranslator from './engine/baidu';
-import sogouTranslator from './engine/sogou';
-import bingTranslator from './engine/bing';
+import naverTranslator from '../engine/naver';
+import kakaoTranslator from '../engine/kakao';
+import googleTranslator from '../engine/google';
+import baiduTranslator from '../engine/baidu';
+import sogouTranslator from '../engine/sogou';
+import bingTranslator from '../engine/bing';
 
 type RunnerCreationParams = {
   engineType: TranslatorEngineType;

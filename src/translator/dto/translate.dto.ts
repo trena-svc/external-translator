@@ -9,3 +9,10 @@ export class TranslateDto {
   useProxy?: boolean;
   parallelism?: number;
 }
+
+export class TranslateJobSubmitDto {
+  srcLang: Language;
+  tgtLang: Language;
+  srcTextList: string[];
+  engineType: TranslatorEngineType;
+}
