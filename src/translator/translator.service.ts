@@ -69,20 +69,20 @@ export class TranslatorService {
               this.logger.log(`Crawler ${runnerIdx}: Prepare the page`);
               await runner.prepare();
               this.logger.log(
-                `Crawler ${runnerIdx}: Start to translate ${curTask.text}`,
+                `Crawler ${runnerIdx}: Start to translate at order [${curTask.order}/${srcTextList.length}]`,
               );
 
               const [result] = await runner.run([curTask.text]);
 
               this.logger.log(
-                `Crawler ${runnerIdx}: Finish to translate ${curTask.text}`,
+                `Crawler ${runnerIdx}: Finish to translate at order [${curTask.order}/${srcTextList.length}]`,
               );
 
               await taskManager.saveTaskResult(curTask, result);
             } catch (err) {
-              const error = err as Error;
+              this.logger.error(err as Error);
               this.logger.error(
-                `Crawler ${runnerIdx}: Failed to translate ${error.message}`,
+                `Crawler ${runnerIdx}: Failed to translate ${curTask.text}`,
               );
               await runner.close();
             }

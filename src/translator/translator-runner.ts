@@ -33,6 +33,10 @@ export default class TranslatorRunner {
     this.prepared = false;
   }
 
+  /**
+   * Prepare the runner. It will create browser and page. Then, it will
+   * initialize translator.
+   */
   async prepare(): Promise<void> {
     const { srcLang, tgtLang } = this.config;
 
@@ -50,6 +54,11 @@ export default class TranslatorRunner {
     this.closed = false;
   }
 
+  /**
+   * Run the translator with text list.
+   *
+   * @param textList a list of text to translate
+   */
   async run(textList: string[]): Promise<string[]> {
     const { srcLang, tgtLang } = this.config;
 
@@ -89,6 +98,9 @@ export default class TranslatorRunner {
     }
   }
 
+  /**
+   * Close the runner including page and browser.
+   */
   async close(): Promise<void> {
     let isSuccessful = true;
     isSuccessful = isSuccessful && (await this.closePage());

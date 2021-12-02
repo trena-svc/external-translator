@@ -18,6 +18,7 @@ export class TranslatorController {
       engineType,
       headless,
       useProxy,
+      parallelism,
     }: TranslateDto,
   ): Promise<string[]> {
     return this.translatorService.translate(
@@ -30,6 +31,7 @@ export class TranslatorController {
       {
         headless,
         useProxy,
+        parallelism,
         onProgressUpdate: async (progress) =>
           this.logger.log(
             `${engineType}, ${srcLang}2${tgtLang}: ${progress}% `,

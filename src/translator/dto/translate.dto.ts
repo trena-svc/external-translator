@@ -7,4 +7,5 @@ export class TranslateDto {
   engineType: TranslatorEngineType;
   headless?: boolean;
   useProxy?: boolean;
+  parallelism?: number;
 }

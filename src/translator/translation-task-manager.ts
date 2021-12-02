@@ -12,7 +12,7 @@ export class TranslationTaskManager {
 
   constructor(
     textList: string[],
-    private onProgressUpdate: (progress: number) => Promise<void>,
+    private onProgressUpdate: (progress: number) => Promise<void> | void,
   ) {
     this.taskList = textList.map((text, order) => ({
       text: TranslationTaskManager.normalizeText(text),
@@ -25,10 +25,17 @@ export class TranslationTaskManager {
     this.curIdx = 0;
   }
 
+  /**
+   * Whether the all task are finished.
+   */
   isFinishedAll(): boolean {
     return this.finishedSet.size === this.taskList.length;
   }
 
+  /**
+   * Get next unfinished task after iteration. It will return undefined if there
+   * is no unfinished task
+   */
   getUnfinishedTask(): TranslationTask | undefined {
     let nextIdx = (this.curIdx + 1) % this.taskList.length;
     const start = nextIdx;
@@ -51,14 +58,19 @@ export class TranslationTaskManager {
     return this.taskList[this.curIdx];
   }
 
-  isFinished(task: TranslationTask) {
-    return this.finishedSet.has(task.order);
-  }
-
+  /**
+   * get result list
+   */
   getResultList(): string[] {
     return this.resultList;
   }
 
+  /**
+   * Save task result.
+   *
+   * @param task finished task
+   * @param result task result
+   */
   async saveTaskResult(task: TranslationTask, result: string): Promise<void> {
     if (this.finishedSet.has(task.order)) {
       return;
