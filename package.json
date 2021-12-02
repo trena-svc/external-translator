@@ -1,8 +1,8 @@
 {
   "name": "trena-external-translator",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Trena translator to translate text using external translator engines",
+  "author": "jh225.kim",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

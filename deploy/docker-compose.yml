@@ -1,0 +1,33 @@
+version: '3.9'
+services:
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - transCrowd_redis:/data
+    ports:
+      - '6379:6379'
+    expose:
+      - '6379'
+
+  crawler:
+    image: trena-remote-worker:1.0.20
+    depends_on:
+      - redis
+    restart: always
+    tty: true
+    environment:
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - BULL_TRANSLATION_RUNNER_PARALLELISM=5
+      - BULL_TRANSLATION_RUNNER_HEADLESS=true
+      - BULL_TRANSLATION_RUNNER_USE_PROXY=true
+      - BULL_TRANSLATION_RUNNER_PROXY_LIST_FILE_PATH=./proxy-list.txt
+      - BULL_TRANSLATION_RUNNER_COUNT_UNIT_TO_CHECK_FAILED=10
+      - BULL_TRANSLATION_CONCURRENCY=10
+    links:
+      - redis
+
+volumes:
+  transCrowd_redis:

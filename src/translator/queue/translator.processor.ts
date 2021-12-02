@@ -41,7 +41,7 @@ export class TranslatorProcessor {
     private readonly configService: ConfigService,
   ) {}
 
-  @Process()
+  @Process({ concurrency: parseInt(process.env.BULL_TRANSLATION_CONCURRENCY) })
   async handleTranslation(
     job: Job<TranslationQueueJobRequest>,
   ): Promise<TranslationQueueJobResponse> {

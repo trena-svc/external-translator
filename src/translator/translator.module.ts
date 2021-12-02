@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 @Module({
   imports: [
     PuppeteerModule.register(),
-    BullModule.registerQueue({
+    BullModule.registerQueueAsync({
       name: 'remote',
     }),
   ],

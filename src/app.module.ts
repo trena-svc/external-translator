@@ -16,15 +16,17 @@ import { TerminusModule } from '@nestjs/terminus';
       load: [configuration],
       isGlobal: true,
       validationSchema: Joi.object({
+        PORT: Joi.number().default(3000),
         REDIS_HOST: Joi.string().required(),
         REDIS_PORT: Joi.number().default(6379),
-        PORT: Joi.number().default(3000),
+        BULL_TRANSLATION_QUEUE_NAME: Joi.string().required(),
         BULL_TRANSLATION_RUNNER_PARALLELISM: Joi.number().default(5),
         BULL_TRANSLATION_RUNNER_HEADLESS: Joi.bool().default(true),
         BULL_TRANSLATION_RUNNER_USE_PROXY: Joi.bool().default(true),
         BULL_TRANSLATION_RUNNER_PROXY_LIST_FILE_PATH: Joi.string(),
         BULL_TRANSLATION_RUNNER_COUNT_UNIT_TO_CHECK_FAILED:
           Joi.number().default(10),
+        BULL_TRANSLATION_CONCURRENCY: Joi.number().default(10),
       }),
     }),
     BullModule.forRootAsync({
