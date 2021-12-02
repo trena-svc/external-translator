@@ -4,5 +4,5 @@ deploy:
 build-puppeteer:
 	docker build -f ./puppeteer.Dockerfile -t puppeteer-chrome-linux ./
 
-build-crawler:
-	docker build -f ./Dockerfile -t trena-remote-worker ./
+build-external-translator:
+	docker build -f ./Dockerfile -t trena-external-translator ./
