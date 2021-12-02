@@ -132,7 +132,7 @@ export default class TranslatorRunner {
       '--disable-dev-shm-usage',
     ];
 
-    if (useProxy) {
+    if (useProxy && proxyList.length > 0) {
       const proxy = proxyList[random(0, proxyList.length)];
       this.logger.log(`Open page with proxy: ${proxy}`);
       const proxyArg = `--proxy-server=${proxy}`;

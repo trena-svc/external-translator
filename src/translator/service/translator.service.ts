@@ -11,9 +11,11 @@ type TranslateParams = {
 };
 
 type TranslateMetaParams = {
+  logPrefix?: string;
   parallelism?: number;
   proxyList: string[];
   onProgressUpdate: (progress: number) => Promise<void>;
+  isCancelledOrFailed?: () => Promise<boolean>;
   headless?: boolean;
   useProxy?: boolean;
 };
@@ -29,11 +31,13 @@ export class TranslatorService {
   async translate(
     { srcLang, tgtLang, srcTextList, engineType }: TranslateParams,
     {
+      logPrefix,
       proxyList,
       onProgressUpdate,
       parallelism = 1,
       headless = true,
       useProxy = true,
+      isCancelledOrFailed = () => Promise.resolve(false),
     }: TranslateMetaParams,
   ): Promise<string[]> {
     const taskManager = new TranslationTaskManager(
@@ -59,16 +63,17 @@ export class TranslatorService {
     try {
       await Promise.race(
         runnerList.map(async (runner, runnerIdx) => {
-          const logRunner = this.createRunnerLogger(runnerIdx);
-
-          while (!taskManager.isFinishedAll()) {
+          const logRunner = this.createRunnerLogger(runnerIdx, logPrefix);
+          while (
+            !taskManager.isFinishedAll() &&
+            !(await isCancelledOrFailed())
+          ) {
             const curTask = taskManager.getUnfinishedTask();
             if (!curTask) {
               break;
             }
 
             try {
-              logRunner(`Prepare the page`);
               await runner.prepare();
               logRunner(
                 `Start to translate at order [${curTask.order}/${srcTextList.length}]`,
@@ -105,14 +110,14 @@ export class TranslatorService {
     return taskManager.getResultList();
   }
 
-  private createRunnerLogger(runnerIdx: number) {
+  private createRunnerLogger(runnerIdx: number, extraPrefix = '') {
     const prefix = `Runner ${runnerIdx}`;
 
     return (log: string, level: 'info' | 'error' = 'info') => {
       if (level === 'info') {
-        this.logger.log(`${prefix}: ${log}`);
+        this.logger.log(`${extraPrefix}, ${prefix}: ${log}`);
       } else {
-        this.logger.error(`${prefix}: ${log}`);
+        this.logger.error(`${extraPrefix}, ${prefix}: ${log}`);
       }
     };
   }

@@ -54,6 +54,18 @@ export class TranslatorProcessor {
       `Received new job ${job.id}: ${srcLang}2${trgLang}, engine: ${engineType}`,
     );
 
+    const createIsCancelledOrFailedFunction = () => {
+      let invokedCount = 0;
+      return async () => {
+        invokedCount += 1;
+        if (invokedCount % workerConfig.countUnitToCheckFailed) {
+          return job.isFailed();
+        } else {
+          return false;
+        }
+      };
+    };
+
     const result = await this.translatorService.translate(
       {
         srcLang,
@@ -64,9 +76,11 @@ export class TranslatorProcessor {
       {
         headless: workerConfig.headless,
         parallelism: workerConfig.parallelism,
-        proxyList: [],
+        proxyList: workerConfig.proxyList,
         useProxy: workerConfig.useProxy,
         onProgressUpdate: (progress) => job.progress(progress),
+        isCancelledOrFailed: createIsCancelledOrFailedFunction(),
+        logPrefix: `JobId: ${job.id}, Engine: ${engineType}`,
       },
     );
 
