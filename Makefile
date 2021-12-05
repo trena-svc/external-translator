@@ -1,5 +1,7 @@
+.PHONY: deploy
+
 deploy:
-	docker stack deploy -c docker-compose.yml trena
+	docker stack deploy -c ./deploy/docker-compose.yml trena
 
 build-puppeteer:
 	docker build -f ./puppeteer.Dockerfile -t puppeteer-chrome-linux ./

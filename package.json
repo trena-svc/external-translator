@@ -1,6 +1,6 @@
 {
   "name": "trena-external-translator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Trena translator to translate text using external translator engines",
   "author": "jh225.kim",
   "private": true,

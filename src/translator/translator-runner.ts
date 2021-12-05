@@ -108,7 +108,7 @@ export default class TranslatorRunner {
     this.closed = true;
 
     if (!isSuccessful) {
-      throw new Error('Failed to close page and browser');
+      this.logger.error('Failed to close page and browser successfully');
     }
   }
 

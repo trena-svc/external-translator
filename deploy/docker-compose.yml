@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.4'
 services:
   redis:
     image: redis
@@ -10,14 +10,16 @@ services:
     expose:
       - '6379'
 
-  crawler:
-    image: trena-external-translator:latest
+  external-translator:
+    image: trena-external-translator:0.1.1
     depends_on:
       - redis
     restart: always
     tty: true
     ports:
-      - "3000:3000"
+      - '3000:3000'
+    expose:
+      - '3000'
     environment:
       - PORT=3000
       - REDIS_HOST=redis
@@ -32,6 +34,12 @@ services:
       - redis
     volumes:
       - ./:/usr/local/app/deploy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 1m
 
 volumes:
   trena-redis:
