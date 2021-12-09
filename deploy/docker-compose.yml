@@ -22,7 +22,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - PROXY_FAILURE_FILTER_THRESHOLD=5
+      - PROXY_FAILURE_FILTER_THRESHOLD=100
     links:
       - redis
     healthcheck:
