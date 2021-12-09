@@ -135,12 +135,14 @@ export class TranslatorService {
 
   private createRunnerLogger(runnerIdx: number, extraPrefix = '') {
     const prefix = `Runner ${runnerIdx}`;
+    const formattedExtraPrefix =
+      extraPrefix.length === 0 ? '' : `${extraPrefix}, `;
 
     return (log: string, level: 'info' | 'error' = 'info') => {
       if (level === 'info') {
-        this.logger.log(`${extraPrefix}, ${prefix}: ${log}`);
+        this.logger.log(`${formattedExtraPrefix}${prefix}: ${log}`);
       } else {
-        this.logger.error(`${extraPrefix}, ${prefix}: ${log}`);
+        this.logger.error(`${formattedExtraPrefix}${prefix}: ${log}`);
       }
     };
   }

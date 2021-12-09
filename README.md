@@ -7,6 +7,7 @@ This is a translator server implementation for Trena to translate the text using
 - Redis
     - It handles heavy task using queue supported by [bull.js](https://github.com/OptimalBits/bull) backed by redis
     - To develop the system, please use this [docker-compose file](./docker-compose-dev.yml)
+    - In bull, it uses the specific queue named by "remote"
 
 ## Environment Variables
 
@@ -32,6 +33,7 @@ This is a translator server implementation for Trena to translate the text using
     - URL of the proxy server for translator
 - `BULL_TRANSLATION_RUNNER_PROXY_SERVER_MANAGER`
     - URL of the proxy server manager
+    - It should include protocol
 - `BULL_TRANSLATION_RUNNER_COUNT_UNIT_TO_CHECK_FAILED`
     - Translation runner will check whether the current job is cancelled or failed because it will try to run until all
       translation task is finished

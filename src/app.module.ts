@@ -19,7 +19,6 @@ import { TerminusModule } from '@nestjs/terminus';
         PORT: Joi.number().default(3000),
         REDIS_HOST: Joi.string().required(),
         REDIS_PORT: Joi.number().default(6379),
-        BULL_TRANSLATION_QUEUE_NAME: Joi.string().required(),
         BULL_TRANSLATION_RUNNER_PARALLELISM: Joi.number().default(5),
         BULL_TRANSLATION_RUNNER_HEADLESS: Joi.bool().default(true),
         BULL_TRANSLATION_RUNNER_PROXY_SERVER: Joi.string(),
