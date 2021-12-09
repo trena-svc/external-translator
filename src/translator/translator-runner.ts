@@ -144,7 +144,7 @@ export default class TranslatorRunner {
       const proxy = await fetchProxy();
       this.activeProxy = proxy;
       this.logger.log(`Open page with proxy: ${proxy}`);
-      const proxyArg = `--proxy-server="socks5=${proxy}"`;
+      const proxyArg = `--proxy-server=${proxy}`;
       args.push(proxyArg);
     }
 
