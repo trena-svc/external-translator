@@ -44,15 +44,19 @@ export class ProxyServerService {
 
     if (proxyServer) return;
 
-    const res = await firstValueFrom(
-      this.httpService.post<{ count: number }>(
-        `${proxyServerManager}/proxy/failed/${target}`,
-        {
-          proxy,
-        },
-      ),
-    );
+    try {
+      const res = await firstValueFrom(
+        this.httpService.patch<{ count: number }>(
+          `${proxyServerManager}/proxy/failed/${target}`,
+          {
+            proxy,
+          },
+        ),
+      );
 
-    this.logger.log(`Proxy Server ${proxy} failed: ${res.data.count}`);
+      this.logger.log(`Proxy Server ${proxy} failed: ${res.data.count}`);
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 }
