@@ -58,7 +58,7 @@ export class TranslatorProcessor {
       let invokedCount = 0;
       return async () => {
         invokedCount += 1;
-        if (invokedCount % workerConfig.countUnitToCheckFailed) {
+        if (invokedCount % workerConfig.countUnitToCheckFailed === 0) {
           return job.isFailed();
         } else {
           return false;

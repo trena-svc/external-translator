@@ -169,7 +169,7 @@ export default class TranslatorRunner {
       await this.page.close();
       return true;
     } catch (inErr) {
-      this.logger.error(inErr);
+      this.logger.error((inErr as Error).stack);
       return false;
     }
   }
@@ -187,7 +187,7 @@ export default class TranslatorRunner {
       await this.browser.close();
       return true;
     } catch (inErr) {
-      this.logger.error(inErr);
+      this.logger.error((inErr as Error).stack);
       return false;
     }
   }

@@ -125,6 +125,7 @@ export class TranslatorService {
         }),
       );
     } catch (err) {
+      this.logger.error((err as Error).stack);
       await Promise.all(runnerList.map((x) => x.close()));
     } finally {
       await Promise.all(runnerList.map((x) => x.close()));

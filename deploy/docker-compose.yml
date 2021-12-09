@@ -36,6 +36,7 @@ services:
     image: trena-external-translator:0.1.3
     depends_on:
       - redis
+      - proxy-server-manager
     restart: always
     tty: true
     ports:
