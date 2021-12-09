@@ -1,14 +1,6 @@
 import { ConfigService } from '@nestjs/config';
-import { readFileSync } from 'fs';
 
 const createConfiguration = () => {
-  const proxyListFilePath =
-    process.env.BULL_TRANSLATION_RUNNER_PROXY_LIST_FILE_PATH;
-  let proxyList = [];
-  if (proxyListFilePath) {
-    proxyList = readFileSync(proxyListFilePath).toString().split('\n');
-  }
-
   return {
     port: parseInt(process.env.PORT, 10) || 3000,
     redis: {
@@ -18,8 +10,9 @@ const createConfiguration = () => {
     translationWorker: {
       parallelism: parseInt(process.env.BULL_TRANSLATION_RUNNER_PARALLELISM),
       headless: process.env.BULL_TRANSLATION_RUNNER_HEADLESS === 'true',
-      useProxy: process.env.BULL_TRANSLATION_RUNNER_USE_PROXY === 'true',
-      proxyList,
+      proxyServer: process.env.BULL_TRANSLATION_RUNNER_PROXY_SERVER,
+      proxyServerManager:
+        process.env.BULL_TRANSLATION_RUNNER_PROXY_SERVER_MANAGER,
       countUnitToCheckFailed:
         parseInt(
           process.env.BULL_TRANSLATION_RUNNER_COUNT_UNIT_TO_CHECK_FAILED,

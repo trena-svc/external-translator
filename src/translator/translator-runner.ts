@@ -1,14 +1,13 @@
 import { Language, Translator } from './translator';
 import { Browser, Page } from 'puppeteer';
-import random from 'lodash/random';
 import { PuppeteerExtra, VanillaPuppeteer } from 'puppeteer-extra';
 import { Logger } from '@nestjs/common';
 
 export type RunnerConfig = {
   puppeteer: PuppeteerExtra;
   headless?: boolean;
-  useProxy?: boolean;
-  proxyList: string[];
+  fetchProxy?: () => Promise<string>;
+  updateFailedProxy?: (proxy: string) => Promise<void>;
   translator: Translator;
   srcLang: Language;
   tgtLang: Language;
@@ -18,6 +17,8 @@ export default class TranslatorRunner {
   private readonly logger = new Logger(TranslatorRunner.name);
 
   private readonly config: RunnerConfig;
+
+  private activeProxy = '';
 
   private closed: boolean;
 
@@ -41,7 +42,7 @@ export default class TranslatorRunner {
     const { srcLang, tgtLang } = this.config;
 
     if (this.closed) {
-      this.browser = await this.getRandomProxyBrowser();
+      this.browser = await this.getBrowser();
       this.page = await this.browser.newPage();
 
       this.page.setDefaultNavigationTimeout(30000);
@@ -101,7 +102,14 @@ export default class TranslatorRunner {
   /**
    * Close the runner including page and browser.
    */
-  async close(): Promise<void> {
+  async close(failed = false): Promise<void> {
+    const { updateFailedProxy } = this.config;
+
+    if (failed && updateFailedProxy && this.activeProxy.length > 0) {
+      await updateFailedProxy(this.activeProxy);
+      this.activeProxy = '';
+    }
+
     let isSuccessful = true;
     isSuccessful = isSuccessful && (await this.closePage());
     isSuccessful = isSuccessful && (await this.closeBrowser());
@@ -115,8 +123,8 @@ export default class TranslatorRunner {
   /**
    * Get browser using random proxy.
    */
-  private async getRandomProxyBrowser() {
-    const { proxyList, headless = true, useProxy = true } = this.config;
+  private async getBrowser() {
+    const { headless = true, fetchProxy } = this.config;
 
     const args: Parameters<VanillaPuppeteer['launch']>[0]['args'] = [
       '--incognito',
@@ -132,10 +140,11 @@ export default class TranslatorRunner {
       '--disable-dev-shm-usage',
     ];
 
-    if (useProxy && proxyList.length > 0) {
-      const proxy = proxyList[random(0, proxyList.length)];
+    if (fetchProxy) {
+      const proxy = await fetchProxy();
+      this.activeProxy = proxy;
       this.logger.log(`Open page with proxy: ${proxy}`);
-      const proxyArg = `--proxy-server=${proxy}`;
+      const proxyArg = `--proxy-server="socks5=${proxy}"`;
       args.push(proxyArg);
     }
 

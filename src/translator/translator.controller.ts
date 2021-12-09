@@ -23,6 +23,7 @@ export class TranslatorController {
       headless,
       useProxy,
       parallelism,
+      proxyServer,
     }: TranslateDto,
   ): Promise<string[]> {
     return this.translatorService.translate(
@@ -34,13 +35,13 @@ export class TranslatorController {
       },
       {
         headless,
+        proxyServer,
         useProxy,
         parallelism,
         onProgressUpdate: async (progress) =>
           this.logger.log(
             `${engineType}, ${srcLang}2${tgtLang}: ${progress}% `,
           ),
-        proxyList: [],
       },
     );
   }

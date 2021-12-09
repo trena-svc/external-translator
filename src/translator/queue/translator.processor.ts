@@ -76,8 +76,7 @@ export class TranslatorProcessor {
       {
         headless: workerConfig.headless,
         parallelism: workerConfig.parallelism,
-        proxyList: workerConfig.proxyList,
-        useProxy: workerConfig.useProxy,
+        proxyServer: workerConfig.proxyServer,
         onProgressUpdate: (progress) => job.progress(progress),
         isCancelledOrFailed: createIsCancelledOrFailedFunction(),
         logPrefix: `JobId: ${job.id}, Engine: ${engineType}`,

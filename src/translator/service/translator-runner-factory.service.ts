@@ -10,7 +10,7 @@ import baiduTranslator from '../engine/baidu';
 import sogouTranslator from '../engine/sogou';
 import bingTranslator from '../engine/bing';
 
-type RunnerCreationParams = {
+export type RunnerCreationParams = {
   engineType: TranslatorEngineType;
 } & Omit<RunnerConfig, 'translator' | 'puppeteer'>;
 

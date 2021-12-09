@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TranslatorRunnerFactoryService } from './translator-runner-factory.service';
+import {
+  RunnerCreationParams,
+  TranslatorRunnerFactoryService,
+} from './translator-runner-factory.service';
 import { Language, TranslatorEngineType } from '../translator';
 import { TranslationTaskManager } from '../translation-task-manager';
+import { ConfigService } from '@nestjs/config';
+import { getConfig } from '../../config/configuration';
+import { ProxyServerService } from './proxy-server.service';
 
 type TranslateParams = {
   engineType: TranslatorEngineType;
@@ -13,12 +19,21 @@ type TranslateParams = {
 type TranslateMetaParams = {
   logPrefix?: string;
   parallelism?: number;
-  proxyList: string[];
+  proxyServer?: string;
+  useProxy?: boolean;
   onProgressUpdate: (progress: number) => Promise<void>;
   isCancelledOrFailed?: () => Promise<boolean>;
   headless?: boolean;
-  useProxy?: boolean;
 };
+
+type CreateProxyCallbackParams = {
+  engineType: TranslatorEngineType;
+} & Pick<TranslateMetaParams, 'useProxy' | 'proxyServer'>;
+
+type CreateProxyCallbackReturn = Pick<
+  RunnerCreationParams,
+  'fetchProxy' | 'updateFailedProxy'
+>;
 
 @Injectable()
 export class TranslatorService {
@@ -26,14 +41,17 @@ export class TranslatorService {
 
   constructor(
     private translatorRunnerFactoryService: TranslatorRunnerFactoryService,
+    private proxyServerService: ProxyServerService,
+    private readonly configService: ConfigService,
   ) {}
 
   async translate(
     { srcLang, tgtLang, srcTextList, engineType }: TranslateParams,
     {
       logPrefix,
-      proxyList,
       onProgressUpdate,
+      proxyServer = getConfig(this.configService, 'translationWorker')
+        .proxyServer,
       parallelism = 1,
       headless = true,
       useProxy = true,
@@ -53,10 +71,13 @@ export class TranslatorService {
       this.translatorRunnerFactoryService.create({
         srcLang,
         tgtLang,
-        proxyList,
         headless,
-        useProxy,
         engineType,
+        ...this.createProxyCallback({
+          useProxy,
+          proxyServer,
+          engineType,
+        }),
       }),
     );
 
@@ -87,7 +108,9 @@ export class TranslatorService {
 
               await taskManager.saveTaskResult(curTask, result);
             } catch (err) {
-              if (!taskManager.isFinishedAll()) {
+              const isErrorInProcess = !taskManager.isFinishedAll();
+
+              if (isErrorInProcess) {
                 logRunner(
                   `Failed to translate ${curTask.text}, ${
                     (err as Error).stack
@@ -96,7 +119,7 @@ export class TranslatorService {
                 );
               }
 
-              await runner.close();
+              await runner.close(isErrorInProcess);
             }
           }
         }),
@@ -119,6 +142,29 @@ export class TranslatorService {
       } else {
         this.logger.error(`${extraPrefix}, ${prefix}: ${log}`);
       }
+    };
+  }
+
+  private createProxyCallback({
+    engineType,
+    useProxy,
+    proxyServer,
+  }: CreateProxyCallbackParams): CreateProxyCallbackReturn {
+    if (useProxy && proxyServer) {
+      return {
+        fetchProxy: () => Promise.resolve(proxyServer),
+        updateFailedProxy: () => Promise.resolve(),
+      };
+    }
+
+    return {
+      fetchProxy: useProxy
+        ? () => this.proxyServerService.getNewProxyServer(engineType)
+        : undefined,
+      updateFailedProxy: useProxy
+        ? (proxy) =>
+            this.proxyServerService.updateFailedProxyServer(engineType, proxy)
+        : undefined,
     };
   }
 }

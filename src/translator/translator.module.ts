@@ -7,9 +7,12 @@ import { BullModule } from '@nestjs/bull';
 import { TranslatorJobSubmissionService } from './service/translator-job-submission.service';
 import { TranslatorProcessor } from './queue/translator.processor';
 import { ConfigService } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
+import { ProxyServerService } from './service/proxy-server.service';
 
 @Module({
   imports: [
+    HttpModule,
     PuppeteerModule.register(),
     BullModule.registerQueueAsync({
       name: 'remote',
@@ -21,6 +24,7 @@ import { ConfigService } from '@nestjs/config';
     TranslatorRunnerFactoryService,
     TranslatorJobSubmissionService,
     TranslatorProcessor,
+    ProxyServerService,
     ConfigService,
   ],
 })
