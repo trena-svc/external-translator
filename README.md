@@ -28,9 +28,10 @@ This is a translator server implementation for Trena to translate the text using
 - `BULL_TRANSLATION_RUNNER_USE_PROXY`
     - Whether to use a list of proxy to run the runner
     - Default: true
-- `BULL_TRANSLATION_RUNNER_PROXY_LIST_FILE_PATH`
-    - File path to get a list of proxy address. The server will read the file and register a list of proxy to the
-      configuration
+- `BULL_TRANSLATION_RUNNER_PROXY_SERVER`
+    - URL of the proxy server for translator
+- `BULL_TRANSLATION_RUNNER_PROXY_SERVER_MANAGER`
+    - URL of the proxy server manager
 - `BULL_TRANSLATION_RUNNER_COUNT_UNIT_TO_CHECK_FAILED`
     - Translation runner will check whether the current job is cancelled or failed because it will try to run until all
       translation task is finished
@@ -38,3 +39,14 @@ This is a translator server implementation for Trena to translate the text using
 - `BULL_TRANSLATION_CONCURRENCY`
     - The number of bull consumer to be active concurrently
     - Default: 10
+
+## Deployment
+
+In the case of using proxy server manager, it is required to initialize a list of proxy server for each translation
+engine. To do it simple you can use [./deploy/init-proxy-storage.sh](./deploy/init-proxy-storage.sh).
+
+```bash
+cd ./deploy
+./init-proxy-storage.sh ${SERVER_URL} google,kakao,naver,bing,baidu,sogou,tencent
+```
+

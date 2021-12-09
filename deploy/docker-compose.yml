@@ -10,8 +10,31 @@ services:
     expose:
       - '6379'
 
+  proxy-server-manager:
+    image: proxy-server-manager:0.1.0
+    depends_on:
+      - redis
+    restart: always
+    ports:
+      - '3001:3000'
+    expose:
+      - '3001'
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PROXY_FAILURE_FILTER_THRESHOLD=5
+      - REDIS_KEY_PREFIX='proxy:'
+    links:
+      - redis
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
   external-translator:
-    image: trena-external-translator:0.1.1
+    image: trena-external-translator:0.1.2
     depends_on:
       - redis
     restart: always
@@ -27,11 +50,12 @@ services:
       - BULL_TRANSLATION_RUNNER_PARALLELISM=5
       - BULL_TRANSLATION_RUNNER_HEADLESS=true
       - BULL_TRANSLATION_RUNNER_USE_PROXY=true
-      - BULL_TRANSLATION_RUNNER_PROXY_LIST_FILE_PATH=/usr/local/app/deploy/proxy-list.txt
+      - BULL_TRANSLATION_RUNNER_PROXY_SERVER_MANAGER=proxy-server-manager:3000
       - BULL_TRANSLATION_RUNNER_COUNT_UNIT_TO_CHECK_FAILED=10
       - BULL_TRANSLATION_CONCURRENCY=10
     links:
       - redis
+      - proxy-server-manager
     volumes:
       - ./:/usr/local/app/deploy
     healthcheck:
