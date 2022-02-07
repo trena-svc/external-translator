@@ -8,9 +8,15 @@ import format from 'string-template';
 import { getConfig } from '../../config/configuration';
 import { TranslationTaskManager } from '../translation-task-manager';
 import {
+  createIsCancelledOrFailedFunction,
   TranslationQueueJobRequest,
   TranslationQueueJobResponse,
 } from './queue-job';
+
+const sleep = (time: number) =>
+  new Promise((res, rej) => {
+    setTimeout(() => res(time), time);
+  });
 
 @Processor('local')
 export class TranslatorLocalProcessor {
@@ -24,7 +30,7 @@ export class TranslatorLocalProcessor {
   @Process({ concurrency: 5 })
   async handleTranslation(
     job: Job<TranslationQueueJobRequest>,
-  ): Promise<TranslationQueueJobResponse> {
+  ): Promise<TranslationQueueJobResponse | undefined> {
     const workerConfig = getConfig(this.configService, 'translationWorker');
 
     const { srcLang, trgLang, inputTextList, engineType, meta, ...ext } =
@@ -35,23 +41,23 @@ export class TranslatorLocalProcessor {
       `Received new job ${job.id}: ${srcLang}2${trgLang}, engine: ${engineType}`,
     );
 
-    const createIsCancelledOrFailedFunction = () => {
-      let invokedCount = 0;
-      return async () => {
-        invokedCount += 1;
-        if (invokedCount % workerConfig.countUnitToCheckFailed === 0) {
-          return job.isFailed();
-        } else {
-          return false;
-        }
-      };
-    };
+    const isCancelledOrFailed = createIsCancelledOrFailedFunction(
+      job,
+      workerConfig.countUnitToCheckFailed,
+    );
 
     const taskManager = new TranslationTaskManager(inputTextList, (progress) =>
       job.progress(progress),
     );
 
     while (!taskManager.isFinishedAll()) {
+      const isFailed = await isCancelledOrFailed();
+      if (isFailed) {
+        this.logger.error(`[Cancelled] Job: ${job.id}`);
+        await job.remove();
+        return;
+      }
+
       const curTask = taskManager.getUnfinishedTask();
       const result = await firstValueFrom(
         this.httpService.request({

@@ -5,6 +5,7 @@ import { Job } from 'bull';
 import { getConfig } from '../../config/configuration';
 import { TranslatorService } from '../service/translator.service';
 import {
+  createIsCancelledOrFailedFunction,
   TranslationQueueJobRequest,
   TranslationQueueJobResponse,
 } from './queue-job';
@@ -31,17 +32,10 @@ export class TranslatorRemoteProcessor {
       `Received new job ${job.id}: ${srcLang}2${trgLang}, engine: ${engineType}`,
     );
 
-    const createIsCancelledOrFailedFunction = () => {
-      let invokedCount = 0;
-      return async () => {
-        invokedCount += 1;
-        if (invokedCount % workerConfig.countUnitToCheckFailed === 0) {
-          return job.isFailed();
-        } else {
-          return false;
-        }
-      };
-    };
+    const isCancelledOrFailed = createIsCancelledOrFailedFunction(
+      job,
+      workerConfig.countUnitToCheckFailed,
+    );
 
     const result = await this.translatorService.translate(
       {
@@ -55,10 +49,16 @@ export class TranslatorRemoteProcessor {
         parallelism: workerConfig.parallelism,
         proxyServer: workerConfig.proxyServer,
         onProgressUpdate: (progress) => job.progress(progress),
-        isCancelledOrFailed: createIsCancelledOrFailedFunction(),
+        isCancelledOrFailed,
         logPrefix: `JobId: ${job.id}, Engine: ${engineType}`,
       },
     );
+
+    if (!result) {
+      this.logger.error(`[Cancelled] Job: ${job.id}`);
+      await job.remove();
+      return;
+    }
 
     this.logger.log(
       `Finished new job ${job.id}: ${srcLang}2${trgLang}, engine: ${engineType}`,

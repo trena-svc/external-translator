@@ -57,7 +57,7 @@ export class TranslatorService {
       useProxy = true,
       isCancelledOrFailed = () => Promise.resolve(false),
     }: TranslateMetaParams,
-  ): Promise<string[]> {
+  ): Promise<string[] | undefined> {
     const taskManager = new TranslationTaskManager(
       srcTextList,
       onProgressUpdate,
@@ -129,6 +129,10 @@ export class TranslatorService {
       await Promise.all(runnerList.map((x) => x.close()));
     } finally {
       await Promise.all(runnerList.map((x) => x.close()));
+    }
+
+    if (await isCancelledOrFailed()) {
+      return undefined;
     }
 
     return taskManager.getResultList();

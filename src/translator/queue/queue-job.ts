@@ -1,3 +1,4 @@
+import { Job } from 'bull';
 import { Language, TranslatorEngineType } from '../translator';
 
 export type EngineContentMeta = {
@@ -33,4 +34,25 @@ export type TranslationQueueJobResponse = {
   totalCostTime: number;
   outputTextList: string[];
   refTextList: string[];
+};
+
+export const createIsCancelledOrFailedFunction = (
+  job: Job,
+  countUnitToCheckFailed = 10,
+) => {
+  const counterSet = {
+    counter: 0,
+  };
+  return async () => {
+    if (
+      counterSet.counter === 0 ||
+      counterSet.counter % countUnitToCheckFailed === 0
+    ) {
+      if (await job.isFailed()) {
+        return true;
+      }
+    }
+    counterSet.counter += 1;
+    return false;
+  };
 };
