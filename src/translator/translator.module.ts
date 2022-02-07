@@ -5,17 +5,21 @@ import { TranslatorController } from './translator.controller';
 import { PuppeteerModule } from './puppeteer.module';
 import { BullModule } from '@nestjs/bull';
 import { TranslatorJobSubmissionService } from './service/translator-job-submission.service';
-import { TranslatorProcessor } from './queue/translator.processor';
+import { TranslatorRemoteProcessor } from './queue/translator-remote.processor';
 import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { ProxyServerService } from './service/proxy-server.service';
+import { TranslatorLocalProcessor } from './queue/translator-local.processor';
 
 @Module({
   imports: [
     HttpModule,
     PuppeteerModule.register(),
-    BullModule.registerQueueAsync({
+    BullModule.registerQueue({
       name: 'remote',
+    }),
+    BullModule.registerQueue({
+      name: 'local',
     }),
   ],
   controllers: [TranslatorController],
@@ -23,7 +27,8 @@ import { ProxyServerService } from './service/proxy-server.service';
     TranslatorService,
     TranslatorRunnerFactoryService,
     TranslatorJobSubmissionService,
-    TranslatorProcessor,
+    TranslatorRemoteProcessor,
+    TranslatorLocalProcessor,
     ProxyServerService,
     ConfigService,
   ],

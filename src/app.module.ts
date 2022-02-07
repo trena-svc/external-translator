@@ -2,14 +2,13 @@ import { Module } from '@nestjs/common';
 import { TranslatorModule } from './translator/translator.module';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as Joi from 'joi';
+import Joi from 'joi';
 import configuration, { getConfig } from './config/configuration';
 import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 
 @Module({
   imports: [
-    TranslatorModule,
     TerminusModule,
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
@@ -41,6 +40,7 @@ import { TerminusModule } from '@nestjs/terminus';
         };
       },
     }),
+    TranslatorModule,
   ],
   controllers: [HealthController],
   providers: [],

@@ -1,40 +1,17 @@
-import { Language, TranslatorEngineType } from '../translator';
 import { OnQueueCompleted, Process, Processor } from '@nestjs/bull';
-import { Job } from 'bull';
-import { TranslatorService } from '../service/translator.service';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Job } from 'bull';
 import { getConfig } from '../../config/configuration';
-
-export type TranslationQueueJobRequest = {
-  testCaseId?: string;
-  taskId: string;
-  engineType: TranslatorEngineType;
-  trgLang: Language;
-  srcLang: Language;
-  url: string;
-  refTextList: string[];
-  engineName: string;
-  inputTextList: string[];
-};
-
-export type TranslationQueueJobResponse = {
-  taskId: string;
-  engineName: string;
-  engineType: TranslatorEngineType;
-  srcLang: Language;
-  trgLang: Language;
-  costTimeList: number[];
-  inputTextList: string[];
-  testCaseId?: string;
-  totalCostTime: number;
-  outputTextList: string[];
-  refTextList: string[];
-};
+import { TranslatorService } from '../service/translator.service';
+import {
+  TranslationQueueJobRequest,
+  TranslationQueueJobResponse,
+} from './queue-job';
 
 @Processor('remote')
-export class TranslatorProcessor {
-  private readonly logger = new Logger(TranslatorProcessor.name);
+export class TranslatorRemoteProcessor {
+  private readonly logger = new Logger(TranslatorRemoteProcessor.name);
 
   constructor(
     private readonly translatorService: TranslatorService,

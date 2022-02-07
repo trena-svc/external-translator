@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { TranslationQueueJobRequest } from '../queue/translator.processor';
 import { Language, TranslatorEngineType } from '../translator';
+import { TranslationQueueJobRequest } from '../queue/queue-job';
 
 type TranslatorAddJobParams = {
   engineType: TranslatorEngineType;
@@ -36,6 +36,13 @@ export class TranslatorJobSubmissionService {
       refTextList: srcTextList,
       taskId: 'task-id',
       testCaseId: 'testcase-id',
+      meta: {
+        apiUrl: '',
+        bodyTemplate: '',
+        contentType: '',
+        method: 'POST',
+        resultKey: '',
+      },
     };
 
     const job = await this.translationQueue.add(request);
