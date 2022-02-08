@@ -44,6 +44,22 @@ This is a translator server implementation for Trena to translate the text using
 
 ## Deployment
 
+### Steps
+
+1. Build Puppeteer Docker image
+
+   ```bash
+   docker build -t puppeteer-chrome-linux -f puppeteer.Dockerfile .
+   ```
+
+2. Build translator image based on puppeteer image
+
+   ```bash
+   docker build -t translator-worker .
+   ```
+
+### Proxy Case
+
 In the case of using proxy server manager, it is required to initialize a list of proxy server for each translation
 engine. To do it simple you can use [./deploy/init-proxy-storage.sh](./deploy/init-proxy-storage.sh).
 
